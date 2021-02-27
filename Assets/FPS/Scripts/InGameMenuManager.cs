@@ -92,6 +92,11 @@ public class InGameMenuManager : MonoBehaviour
         SetPauseMenuActivation(false);
     }
 
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
     private AudioState cachedAudioState;
     
     void SetPauseMenuActivation(bool active)
