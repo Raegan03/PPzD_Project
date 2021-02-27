@@ -66,7 +66,7 @@ public class OverheatBehavior : MonoBehaviour
 
         m_AudioSource = gameObject.AddComponent<AudioSource>();
         m_AudioSource.clip = coolingCellsSound;
-        m_AudioSource.outputAudioMixerGroup = AudioUtility.GetAudioGroup(AudioUtility.AudioGroups.WeaponOverheat);
+        m_AudioSource.outputAudioMixerGroup = AudioManager.Instance.GetAudioGroup(SFXAudioGroups.Weapon);
     }
 
     void Update()

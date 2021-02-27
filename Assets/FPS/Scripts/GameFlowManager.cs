@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameFlowManager : MonoBehaviour
@@ -16,18 +17,20 @@ public class GameFlowManager : MonoBehaviour
     public float delayBeforeFadeToBlack = 4f;
     [Tooltip("Duration of delay before the win message")]
     public float delayBeforeWinMessage = 2f;
-    [Tooltip("Sound played on win")]
-    public AudioClip victorySound;
     [Tooltip("Prefab for the win game message")]
     public GameObject WinGameMessagePrefab;
 
     [Header("Lose")]
     [Tooltip("This string has to be the name of the scene you want to load when losing")]
     public string loseSceneName = "LoseScene";
+    public GameObject LoseGameMessagePrefab;
+
 
 
     public bool gameIsEnding { get; private set; }
 
+    [SerializeField] private EnemyManager enemyManager;
+    
     PlayerCharacterController m_Player;
     NotificationHUDManager m_NotificationHUDManager;
     ObjectiveManager m_ObjectiveManager;
@@ -42,7 +45,15 @@ public class GameFlowManager : MonoBehaviour
         m_ObjectiveManager = FindObjectOfType<ObjectiveManager>();
 		DebugUtility.HandleErrorIfNullFindObject<ObjectiveManager, GameFlowManager>(m_ObjectiveManager, this);
 
-        AudioUtility.SetMasterVolume(1);
+        AudioManager.Instance.ChangeAudioState(AudioState.Casual, .75f);
+        enemyManager.onFightStateChange += HandleFightStateChange;
+    }
+
+    private void HandleFightStateChange(bool isFight)
+    {
+        AudioManager.Instance.ChangeAudioState(isFight 
+            ? AudioState.Fight 
+            : AudioState.Casual, .5f);
     }
 
     void Update()
@@ -51,8 +62,6 @@ public class GameFlowManager : MonoBehaviour
         {
             float timeRatio = 1 - (m_TimeLoadEndGameScene - Time.time) / endSceneLoadDelay;
             endGameFadeCanvasGroup.alpha = timeRatio;
-
-            AudioUtility.SetMasterVolume(1 - timeRatio);
 
             // See if it's time to load the end scene (after the delay)
             if (Time.time >= m_TimeLoadEndGameScene)
@@ -77,6 +86,8 @@ public class GameFlowManager : MonoBehaviour
         // unlocks the cursor before leaving the scene, to be able to click buttons
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        
+        AudioManager.Instance.ChangeAudioState(AudioState.End, .25f);
 
         // Remember that we need to load the appropriate end scene after a delay
         gameIsEnding = true;
@@ -86,12 +97,7 @@ public class GameFlowManager : MonoBehaviour
             m_SceneToLoad = winSceneName;
             m_TimeLoadEndGameScene = Time.time + endSceneLoadDelay + delayBeforeFadeToBlack;
 
-            // play a sound on win
-            var audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.clip = victorySound;
-            audioSource.playOnAwake = false;
-            audioSource.outputAudioMixerGroup = AudioUtility.GetAudioGroup(AudioUtility.AudioGroups.HUDVictory);
-            audioSource.PlayScheduled(AudioSettings.dspTime + delayBeforeWinMessage);
+            AudioManager.Instance.PlayVictoryClip(delayBeforeWinMessage);
 
             // create a game message
             var message = Instantiate(WinGameMessagePrefab).GetComponent<DisplayMessage>();
@@ -103,8 +109,25 @@ public class GameFlowManager : MonoBehaviour
         }
         else
         {
+            AudioManager.Instance.PlayLoseClip(delayBeforeWinMessage);
+            
+            var message = Instantiate(LoseGameMessagePrefab).GetComponent<DisplayMessage>();
+            if (message)
+            {
+                message.delayBeforeShowing = delayBeforeWinMessage;
+                message.GetComponent<Transform>().SetAsLastSibling();
+            }
+            
             m_SceneToLoad = loseSceneName;
-            m_TimeLoadEndGameScene = Time.time + endSceneLoadDelay;
+            m_TimeLoadEndGameScene = Time.time + endSceneLoadDelay + delayBeforeFadeToBlack;
         }
+
+        StartCoroutine(DelayedSilence());
+    }
+
+    private IEnumerator DelayedSilence()
+    {
+        yield return new WaitForSeconds(delayBeforeFadeToBlack + endSceneLoadDelay / 2f);
+        AudioManager.Instance.ChangeAudioState(AudioState.Silent, endSceneLoadDelay / 2f);
     }
 }

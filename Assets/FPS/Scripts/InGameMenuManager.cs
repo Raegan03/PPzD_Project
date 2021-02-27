@@ -92,6 +92,8 @@ public class InGameMenuManager : MonoBehaviour
         SetPauseMenuActivation(false);
     }
 
+    private AudioState cachedAudioState;
+    
     void SetPauseMenuActivation(bool active)
     {
         menuRoot.SetActive(active);
@@ -100,9 +102,11 @@ public class InGameMenuManager : MonoBehaviour
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-            Time.timeScale = 0f;
-            AudioUtility.SetMasterVolume(volumeWhenMenuOpen);
 
+            cachedAudioState = AudioManager.Instance.AudioState;
+            AudioManager.Instance.ChangeAudioState(AudioState.UI, 0f);
+
+            Time.timeScale = 0f;
             EventSystem.current.SetSelectedGameObject(null);
         }
         else
@@ -110,7 +114,8 @@ public class InGameMenuManager : MonoBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             Time.timeScale = 1f;
-            AudioUtility.SetMasterVolume(1);
+            
+            AudioManager.Instance.ChangeAudioState(cachedAudioState, .25f);
         }
 
     }

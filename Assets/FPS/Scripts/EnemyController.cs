@@ -54,11 +54,7 @@ public class EnemyController : MonoBehaviour
     public Gradient onHitBodyGradient;
     [Tooltip("The duration of the flash on hit")]
     public float flashOnHitDuration = 0.5f;
-
-    [Header("Sounds")]
-    [Tooltip("Sound played when recieving damages")]
-    public AudioClip damageTick;
-
+    
     [Header("VFX")]
     [Tooltip("The VFX prefab spawned when the enemy dies")]
     public GameObject deathVFX;
@@ -79,6 +75,8 @@ public class EnemyController : MonoBehaviour
     public Color attackRangeColor = Color.red;
     [Tooltip("Color of the sphere gizmo representing the detection range")]
     public Color detectionRangeColor = Color.blue;
+
+    public UnityEvent OnEnemyDie;
 
     public UnityAction onAttack;
     public UnityAction onDetectedTarget;
@@ -101,6 +99,8 @@ public class EnemyController : MonoBehaviour
     public NavMeshAgent m_NavMeshAgent { get; private set; }
     public DetectionModule m_DetectionModule { get; private set; }
 
+    private AudioManager _audioManager;
+    
     int m_PathDestinationNodeIndex;
     EnemyManager m_EnemyManager;
     ActorsManager m_ActorsManager;
@@ -117,6 +117,8 @@ public class EnemyController : MonoBehaviour
 
     void Start()
     {
+        _audioManager = FindObjectOfType<AudioManager>();
+        
         m_EnemyManager = FindObjectOfType<EnemyManager>();
         DebugUtility.HandleErrorIfNullFindObject<EnemyManager, EnemyController>(m_EnemyManager, this);
 
@@ -334,15 +336,12 @@ public class EnemyController : MonoBehaviour
             // pursue the player
             m_DetectionModule.OnDamaged(damageSource);
 
-            if (onDamaged != null)
-            {
-                onDamaged.Invoke();
-            }
+            onDamaged?.Invoke();
             m_LastTimeDamaged = Time.time;
 
             // play the damage tick sound
-            if (damageTick && !m_WasDamagedThisFrame)
-                AudioUtility.CreateSFX(damageTick, transform.position, AudioUtility.AudioGroups.DamageTick, 0f);
+            if (!m_WasDamagedThisFrame)
+                _audioManager.PlayRandomHitClip(transform.position);
 
             m_WasDamagedThisFrame = true;
         }
@@ -362,6 +361,9 @@ public class EnemyController : MonoBehaviour
         {
             Instantiate(lootPrefab, transform.position, Quaternion.identity);
         }
+        
+        _audioManager.PlayRandomDieClip(transform.position);
+        OnEnemyDie?.Invoke();
 
         // this will call the OnDestroy function
         Destroy(gameObject, deathDuration);

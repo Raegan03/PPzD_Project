@@ -68,7 +68,7 @@ public class Pickup : MonoBehaviour
 
         if (pickupSFX)
         {
-            AudioUtility.CreateSFX(pickupSFX, transform.position, AudioUtility.AudioGroups.Pickup, 0f);
+            AudioManager.Instance.CreateSFX(pickupSFX, transform.position, SFXAudioGroups.Player, 1f, .5f);
         }
 
         if (pickupVFXPrefab)

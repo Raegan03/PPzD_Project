@@ -182,7 +182,8 @@ public class ObjectiveToast : MonoBehaviour
         if (!m_AudioSource)
         {
             m_AudioSource = gameObject.AddComponent<AudioSource>();
-            m_AudioSource.outputAudioMixerGroup = AudioUtility.GetAudioGroup(AudioUtility.AudioGroups.HUDObjective);
+            m_AudioSource.outputAudioMixerGroup = AudioManager.Instance
+                .GetAudioGroup(SFXAudioGroups.Main);
         }
 
         m_AudioSource.PlayOneShot(sound);

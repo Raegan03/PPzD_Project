@@ -232,7 +232,7 @@ public class ProjectileStandard : MonoBehaviour
         // impact sfx
         if (impactSFXClip)
         {
-            AudioUtility.CreateSFX(impactSFXClip, point, AudioUtility.AudioGroups.Impact, 1f, 3f);
+            AudioManager.Instance.CreateSFX(impactSFXClip, point, SFXAudioGroups.Weapon, 1f, 1f, 5f);
         }
 
         // Self Destruct

@@ -19,6 +19,7 @@ public class EnemyMobile : MonoBehaviour
     public ParticleSystem[] randomHitSparks;
     public ParticleSystem[] onDetectVFX;
     public AudioClip onDetectSFX;
+    public int detectLoops;
 
     [Header("Sound")]
     public AudioClip MovementSound;
@@ -140,7 +141,8 @@ public class EnemyMobile : MonoBehaviour
 
         if (onDetectSFX)
         {
-            AudioUtility.CreateSFX(onDetectSFX, transform.position, AudioUtility.AudioGroups.EnemyDetection, 1f);
+            AudioManager.Instance.CreateLoopSFX(onDetectSFX, transform.position, 
+                SFXAudioGroups.Alarm, 1f, detectLoops, 1f, 5f);
         }
 
         animator.SetBool(k_AnimAlertedParameter, true);

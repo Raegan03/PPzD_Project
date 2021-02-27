@@ -85,7 +85,7 @@ public class WeaponController : MonoBehaviour
     [Tooltip("Unparent the muzzle flash instance on spawn")]
     public bool unparentMuzzleFlash;
     [Tooltip("sound played when shooting")]
-    public AudioClip shootSFX;
+    public AudioClip[] shootSFXs;
     [Tooltip("Sound played when changing to this weapon")]
     public AudioClip changeWeaponSFX;
 
@@ -131,7 +131,8 @@ public class WeaponController : MonoBehaviour
             m_continuousShootAudioSource = gameObject.AddComponent<AudioSource>();
             m_continuousShootAudioSource.playOnAwake = false;
             m_continuousShootAudioSource.clip = continuousShootLoopSFX;
-            m_continuousShootAudioSource.outputAudioMixerGroup = AudioUtility.GetAudioGroup(AudioUtility.AudioGroups.WeaponShoot);
+            m_continuousShootAudioSource.outputAudioMixerGroup = AudioManager.Instance
+                .GetAudioGroup(SFXAudioGroups.Weapon);
             m_continuousShootAudioSource.loop = true;
         }
     }
@@ -219,7 +220,7 @@ public class WeaponController : MonoBehaviour
             {
                 if (!m_continuousShootAudioSource.isPlaying)
                 {
-                    m_ShootAudioSource.PlayOneShot(shootSFX);
+                    m_ShootAudioSource.PlayOneShot(shootSFXs.GetRandomItem());
                     m_ShootAudioSource.PlayOneShot(continuousShootStartSFX);
                     m_continuousShootAudioSource.Play();
                 }
@@ -360,9 +361,9 @@ public class WeaponController : MonoBehaviour
         m_LastTimeShot = Time.time;
 
         // play shoot SFX
-        if (shootSFX && !useContinuousShootSound)
+        if (shootSFXs.Length > 0 && !useContinuousShootSound)
         {
-            m_ShootAudioSource.PlayOneShot(shootSFX);
+            m_ShootAudioSource.PlayOneShot(shootSFXs.GetRandomItem());
         }
 
         // Trigger attack animation if there is any

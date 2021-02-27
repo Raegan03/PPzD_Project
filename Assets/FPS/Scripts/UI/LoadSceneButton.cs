@@ -6,6 +6,13 @@ public class LoadSceneButton : MonoBehaviour
 {
     public string sceneName = "";
 
+    private MenuNavigation _menuNavigation;
+    
+    private void Awake()
+    {
+        _menuNavigation = FindObjectOfType<MenuNavigation>();
+    }
+
     private void Update()
     {
         if(EventSystem.current.currentSelectedGameObject == gameObject 
@@ -17,6 +24,7 @@ public class LoadSceneButton : MonoBehaviour
 
     public void LoadTargetScene()
     {
-        SceneManager.LoadScene(sceneName);
+        if(_menuNavigation) _menuNavigation.LoadNextScene(sceneName);
+        else SceneManager.LoadScene(sceneName);
     }
 }

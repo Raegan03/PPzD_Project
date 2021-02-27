@@ -21,6 +21,7 @@ public class EnemyTurret : MonoBehaviour
     public ParticleSystem[] randomHitSparks;
     public ParticleSystem[] onDetectVFX;
     public AudioClip onDetectSFX;
+    public int detectLoops;
 
     public AIState aiState { get; private set; }
 
@@ -132,7 +133,8 @@ public class EnemyTurret : MonoBehaviour
 
         if (onDetectSFX)
         {
-            AudioUtility.CreateSFX(onDetectSFX, transform.position, AudioUtility.AudioGroups.EnemyDetection, 1f);
+            AudioManager.Instance.CreateLoopSFX(onDetectSFX, transform.position, 
+                SFXAudioGroups.Alarm, 1f, detectLoops, 1f, 10f);
         }
 
         animator.SetBool(k_AnimIsActiveParameter, true);
